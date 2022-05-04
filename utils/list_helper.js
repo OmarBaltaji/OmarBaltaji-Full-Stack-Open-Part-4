@@ -30,4 +30,36 @@ const favoriteBlog = (blogs) => {
   return blogs.length === 0 ? {} : blogs.reduce(reducer, -Infinity);
 }
 
-module.exports = { dummy, totalLikes, favoriteBlog }
+const mostBlogs = (blogs) => {
+  uniqueAuthors = [];
+  authorsAndBlogsArray = [];
+  blogs.forEach(blog => {
+    if(uniqueAuthors.includes(blog.author)) {
+      authorsAndBlogsArray = authorsAndBlogsArray.map(item => { 
+        if(item.author === blog.author) {
+          item.blogs += 1;
+          return item;
+        }
+      });
+    } else {
+      authorsAndBlogsObject = {
+        author: blog.author,
+        blogs: 1
+      };
+      authorsAndBlogsArray.push(authorsAndBlogsObject);
+      uniqueAuthors.push(blog.author);
+    }
+  })
+
+  mostBlogsAuthor = authorsAndBlogsArray.reduce((item1, item2) => {
+    if(item1.blogs > item2.blogs) {
+      return item1;
+    } else {
+      return item2;
+    }
+  }, -Infinity)
+
+  return blogs.length === 0 ? {} : mostBlogsAuthor
+}
+
+module.exports = { dummy, totalLikes, favoriteBlog, mostBlogs }
