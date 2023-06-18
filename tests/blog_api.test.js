@@ -48,3 +48,19 @@ test('a valid blog can be added', async () => {
   const contents = blogs.map(blog => blog.title);
   expect(contents).toContain('blog 3');
 });
+
+test('likes missing defaults to 0', async () => {
+  const blog =   {
+    title: 'blog 4',
+    author: 'Moustafa Amar',
+    url: 'https://blog.com/blog4',
+  };
+
+  const response = await api
+    .post('/api/blogs')
+    .send(blog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/);
+  
+  expect(response.body.likes).toBe(0);
+})
