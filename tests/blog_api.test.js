@@ -27,3 +27,24 @@ test('unique identifier be id', async () => {
 
   expect(response.body[0].id).toBeDefined();
 }, 100000);
+
+test('a valid blog can be added', async () => {
+  const blog =   {
+    title: 'blog 3',
+    author: 'Mohamad Merhi',
+    url: 'https://blog.com/blog3',
+    likes: 10
+  };
+
+  await api
+    .post('/api/blogs')
+    .send(blog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/);
+  
+  const blogs = await helper.blogsInDB();
+  expect(blogs).toHaveLength(helper.initialBlogs.length + 1);
+
+  const contents = blogs.map(blog => blog.title);
+  expect(contents).toContain('blog 3');
+});
