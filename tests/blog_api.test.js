@@ -21,3 +21,9 @@ test('notes are returned in json and correct amount', async () => {
 
   expect(response.body).toHaveLength(2);
 }, 100000);
+
+test('unique identifier be id', async () => {
+  const response = await api.get('/api/blogs');
+
+  expect(response.body[0].id).toBeDefined();
+}, 100000);
