@@ -4,6 +4,7 @@ const app = require('../app');
 const api = supertest(app);
 const Blog = require('../models/blog');
 const helper = require('../utils/test_helper.js');
+const timeout = 100000;
 
 beforeEach(async () => {
   await Blog.deleteMany({});
@@ -20,13 +21,13 @@ test('notes are returned in json and correct amount', async () => {
     .expect('Content-Type', /application\/json/);
 
   expect(response.body).toHaveLength(2);
-}, 100000);
+}, timeout);
 
 test('unique identifier be id', async () => {
   const response = await api.get('/api/blogs');
 
   expect(response.body[0].id).toBeDefined();
-}, 100000);
+}, timeout);
 
 test('a valid blog can be added', async () => {
   const blog =   {
@@ -63,4 +64,18 @@ test('likes missing defaults to 0', async () => {
     .expect('Content-Type', /application\/json/);
   
   expect(response.body.likes).toBe(0);
-})
+});
+
+test('blog with missing properties not added', async () => {
+  const blog = {
+    author: 'Amer Masr'
+  };
+
+  await api
+    .post('/api/blogs')
+    .send(blog)
+    .expect(400);
+
+  const blogs = await helper.blogsInDB();
+  expect(blogs).toHaveLength(helper.initialBlogs.length);
+}, timeout)
