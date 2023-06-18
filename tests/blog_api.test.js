@@ -49,8 +49,8 @@ describe('adding a blog', () => {
     const blogs = await helper.blogsInDB();
     expect(blogs).toHaveLength(helper.initialBlogs.length + 1);
   
-    const contents = blogs.map(blog => blog.title);
-    expect(contents).toContain('blog 3');
+    const titles = blogs.map(blog => blog.title);
+    expect(titles).toContain('blog 3');
   });
   
   test('likes missing defaults to 0', async () => {
@@ -96,8 +96,30 @@ describe('deletion of blog', () => {
     blogs = await helper.blogsInDB();
     expect(blogs).toHaveLength(helper.initialBlogs.length - 1);
 
-    const contents = blogs.map(blog => blog.title);
-    expect(contents).not.toContain(firstBlog.title);
+    const titles = blogs.map(blog => blog.title);
+    expect(titles).not.toContain(firstBlog.title);
+  })
+})
+
+describe('updating a blog', () => {
+  test('succeeds with updating a blog if id and body are valid', async () => {
+    const blogs = await helper.blogsInDB();
+    const firstBlog = blogs[0];
+    const modifiedProperties = {
+      url: 'https://newblogsite/modifiedblog'
+    };
+
+    const response = await api
+      .put(`/api/blogs/${firstBlog.id}`)
+      .send(modifiedProperties)
+      .expect(200);
+
+    const updatedBlog = {
+      ...response.body,
+      ...modifiedProperties,
+    }
+    
+    expect(response.body).toEqual(updatedBlog);
   })
 })
 
