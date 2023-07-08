@@ -35,8 +35,20 @@ blogsRouter.post('/', async (request, response) => {
 
 blogsRouter.delete('/:id', async (request, response) => {
   const id = request.params.id;
-  await Blog.findByIdAndRemove(id);
-  response.status(204).end();
+  const token =  jwt.verify(request.token, process.env.SECRET);
+
+  if (!token.id) {
+    return response.status(401).json({ error: 'Unauthenticated' });
+  }
+
+  const blog = await Blog.findById(id);
+
+  if(blog.user.toString() === token.id) {
+    await Blog.findByIdAndRemove(id);
+    return response.status(204).end();
+  }
+
+  return response.status(400).json({ error: "Cannot delete blogs that aren't yours" });
 })
 
 blogsRouter.put('/:id', async (request, response) => {
