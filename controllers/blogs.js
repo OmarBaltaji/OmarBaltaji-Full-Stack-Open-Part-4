@@ -2,13 +2,14 @@ const blogsRouter = require('express').Router();
 const Blog = require('../models/blog');
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
+const middleware = require('../utils/middleware');
 
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 });
   response.json(blogs);
 })
 
-blogsRouter.post('/', async (request, response) => {
+blogsRouter.post('/', middleware.userExtractor,  async (request, response) => {
   const { title, author, url, likes } = request.body;
   const token = jwt.verify(request.token, process.env.SECRET);
 
@@ -16,7 +17,7 @@ blogsRouter.post('/', async (request, response) => {
     return response.status(401).json({ error: 'Unauthenticated' });
   }
 
-  const user = await User.findById(token.id);
+  const user = request.user;
 
   const blog = new Blog({
     title: title,
@@ -33,7 +34,7 @@ blogsRouter.post('/', async (request, response) => {
   response.status(201).json(newBlog);
 })
 
-blogsRouter.delete('/:id', async (request, response) => {
+blogsRouter.delete('/:id', middleware.userExtractor, async (request, response) => {
   const id = request.params.id;
   const token =  jwt.verify(request.token, process.env.SECRET);
 
@@ -41,9 +42,11 @@ blogsRouter.delete('/:id', async (request, response) => {
     return response.status(401).json({ error: 'Unauthenticated' });
   }
 
+  const user = request.user;
+
   const blog = await Blog.findById(id);
 
-  if(blog.user.toString() === token.id) {
+  if(blog.user.toString() === user._id.toString()) {
     await Blog.findByIdAndRemove(id);
     return response.status(204).end();
   }
