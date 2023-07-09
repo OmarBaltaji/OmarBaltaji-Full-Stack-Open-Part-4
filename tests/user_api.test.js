@@ -3,7 +3,7 @@ const supertest = require('supertest');
 const app = require('../app');
 const api = supertest(app);
 const bcrypt = require('bcrypt');
-const helpers = require('../utils/test_helper.js');
+const helpers = require('./test_helper.js');
 const mongoose = require('mongoose');
 
 beforeEach(async () => {
