@@ -11,11 +11,6 @@ blogsRouter.get('/', async (request, response) => {
 
 blogsRouter.post('/', middleware.userExtractor,  async (request, response) => {
   const { title, author, url, likes } = request.body;
-  const token = jwt.verify(request.token, process.env.SECRET);
-
-  if (!token.id) {
-    return response.status(401).json({ error: 'Unauthenticated' });
-  }
 
   const user = request.user;
 
@@ -36,11 +31,6 @@ blogsRouter.post('/', middleware.userExtractor,  async (request, response) => {
 
 blogsRouter.delete('/:id', middleware.userExtractor, async (request, response) => {
   const id = request.params.id;
-  const token =  jwt.verify(request.token, process.env.SECRET);
-
-  if (!token.id) {
-    return response.status(401).json({ error: 'Unauthenticated' });
-  }
 
   const user = request.user;
 
