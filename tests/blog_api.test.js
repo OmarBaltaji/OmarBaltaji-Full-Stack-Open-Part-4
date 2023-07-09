@@ -9,7 +9,8 @@ const timeout = 100000;
 beforeEach(async () => {
   await Blog.deleteMany({});
 
-  const blogs = helper.initialBlogs.map(blog => new Blog(blog));
+  const users = await helper.usersInDB();
+  const blogs = helper.initialBlogs.map(blog => new Blog({...blog, user: users[0].id}));
   const promiseArray = blogs.map(blog => blog.save());
   await Promise.all(promiseArray);
 })
@@ -39,9 +40,21 @@ describe('adding a blog', () => {
       url: 'https://blog.com/blog3',
       likes: 10
     };
+
+    const userCredentials = {
+      username: 'root',
+      password: 'password'
+    };
+    const tokenResponse = await api
+    .post('/api/login')
+    .send(userCredentials)
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+    const token = tokenResponse.body.token;
   
     await api
       .post('/api/blogs')
+      .set({ Authorization: `Bearer ${token}` })
       .send(blog)
       .expect(201)
       .expect('Content-Type', /application\/json/);
@@ -60,8 +73,21 @@ describe('adding a blog', () => {
       url: 'https://blog.com/blog4',
     };
   
+    const userCredentials = {
+      username: 'root',
+      password: 'password'
+    };
+  
+    const tokenResponse = await api
+    .post('/api/login')
+    .send(userCredentials)
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+    const token = tokenResponse.body.token;
+
     const response = await api
       .post('/api/blogs')
+      .set({ Authorization: `Bearer ${token}` })
       .send(blog)
       .expect(201)
       .expect('Content-Type', /application\/json/);
@@ -73,15 +99,44 @@ describe('adding a blog', () => {
     const blog = {
       author: 'Amer Masr'
     };
-  
+
+    const userCredentials = {
+      username: 'root',
+      password: 'password'
+    };
+    const tokenResponse = await api
+    .post('/api/login')
+    .send(userCredentials)
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+    const token = tokenResponse.body.token;
+
     await api
       .post('/api/blogs')
+      .set({ Authorization: `Bearer ${token}` })
       .send(blog)
       .expect(400);
   
     const blogs = await helper.blogsInDB();
     expect(blogs).toHaveLength(helper.initialBlogs.length);
   }, timeout)
+
+  test('adding a blog fails if a token is not provided', async () => {
+    const blog =   {
+      title: 'blog 3',
+      author: 'Mohamad Merhi',
+      url: 'https://blog.com/blog3',
+      likes: 10
+    };
+
+    await api
+      .post('/api/blogs')
+      .send(blog)
+      .expect(401);
+    
+    const blogs = await helper.blogsInDB();
+    expect(blogs).toHaveLength(helper.initialBlogs.length);
+  }) 
 })
 
 describe('deletion of blog', () => {
@@ -89,8 +144,20 @@ describe('deletion of blog', () => {
     let blogs = await helper.blogsInDB();
     const firstBlog = blogs[0];
 
+    const userCredentials = {
+      username: 'root',
+      password: 'password'
+    };
+    const tokenResponse = await api
+    .post('/api/login')
+    .send(userCredentials)
+    .expect(200)
+    .expect('Content-Type', /application\/json/);
+    const token = tokenResponse.body.token;
+
     await api
       .delete(`/api/blogs/${firstBlog.id}`)
+      .set({ Authorization: `Bearer ${token}` })
       .expect(204);
     
     blogs = await helper.blogsInDB();
