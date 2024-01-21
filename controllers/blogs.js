@@ -67,6 +67,11 @@ blogsRouter.put('/:id', async (request, response) => {
 blogsRouter.post('/:id/comments', async (request, response) => {
   const id = request.params.id;
   const { comment } = request.body;
+  
+  if (!comment) {
+    return response.json({ message: "Comment can't be empty" });
+  }
+
   const blog = await Blog.findById(id);
 
   if (blog?.comments === undefined) {
@@ -75,7 +80,7 @@ blogsRouter.post('/:id/comments', async (request, response) => {
 
   blog.comments.push(comment);
   await blog.save();
-  response.json({ message: "comments added successfully" });
+  response.json(blog);
 })
 
 module.exports = blogsRouter;
